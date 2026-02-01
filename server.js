@@ -11,7 +11,27 @@ const extraJsRoutes = require("./routes/extraJsRoutes");
 
 const app = express();
 const port = 3000;
-const httpPort = 8502;
+
+// 1. Basic Bot Detection & Logging Middleware
+app.use((req, res, next) => {
+  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  const userAgent = req.get("User-Agent") || "";
+  const timestamp = new Date().toISOString();
+
+  // Simple Bot List
+  const bots = [/bot/i, /spider/i, /crawl/i, /python-requests/i, /curl/i];
+  const isBot = bots.some((regex) => regex.test(userAgent));
+
+  if (isBot) {
+    console.log(
+      `[${timestamp}] BLOCK - Bot Detected: ${userAgent} from IP: ${ip}`,
+    );
+    return res.status(403).send("Bots not allowed.");
+  }
+
+  console.log(`[${timestamp}] ACCESS - Path: ${req.path} | IP: ${ip}`);
+  next();
+});
 
 // Basic Middleware
 app.use(express.json());
@@ -40,5 +60,5 @@ app.use((req, res) => {
 
 // Start the server using the Express app directly
 app.listen(port, () => {
-  console.log(`JS Delivery Server running on port ${port}`);
+  console.log(`sedemo-node running on port ${port}`);
 });
