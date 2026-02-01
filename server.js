@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
 const morgan = require("morgan");
+const rfs = require("rotating-file-stream");
 require("dotenv").config();
 
 // Import only the required route
@@ -13,11 +14,12 @@ const extraJsRoutes = require("./routes/extraJsRoutes");
 const app = express();
 const port = 3000;
 
-// 1. Setup File Logging (Append mode)
-const accessLogStream = fs.createWriteStream(
-  path.join(__dirname, "access.log"),
-  { flags: "a" },
-);
+// 1. Create a rotating write stream in the /logs directory
+const accessLogStream = rfs.createStream("access.log", {
+  interval: "1d", // rotate daily
+  size: "10M", // or rotate when it hits 10MB
+  path: path.join(__dirname, "logs"),
+});
 
 // Log to both the console (for PM2 logs) and a file
 app.use(morgan("combined", { stream: accessLogStream }));
