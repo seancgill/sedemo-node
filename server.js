@@ -38,11 +38,7 @@ app.use((req, res) => {
   res.status(404).send("Resource not found");
 });
 
-// Start
-httpsServer.listen(port, () => {
+// Start the server using the Express app directly
+app.listen(port, () => {
   console.log(`JS Delivery Server running on port ${port}`);
-});
-
-httpServer.listen(httpPort, () => {
-  console.log(`HTTP Redirector running on port ${httpPort}`);
 });
