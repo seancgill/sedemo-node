@@ -4,6 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
+const morgan = require("morgan");
 require("dotenv").config();
 
 // Import only the required route
@@ -11,6 +12,16 @@ const extraJsRoutes = require("./routes/extraJsRoutes");
 
 const app = express();
 const port = 3000;
+
+// 1. Setup File Logging (Append mode)
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, "access.log"),
+  { flags: "a" },
+);
+
+// Log to both the console (for PM2 logs) and a file
+app.use(morgan("combined", { stream: accessLogStream }));
+app.use(morgan("dev"));
 
 // 1. Basic Bot Detection & Logging Middleware
 app.use((req, res, next) => {
