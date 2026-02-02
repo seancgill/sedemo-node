@@ -6,6 +6,7 @@ const path = require("path");
 const cors = require("cors");
 const morgan = require("morgan");
 const rfs = require("rotating-file-stream");
+const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
 
 // Import only the required route
@@ -24,6 +25,14 @@ const accessLogStream = rfs.createStream("access.log", {
 // Log to both the console (for PM2 logs) and a file
 app.use(morgan("combined", { stream: accessLogStream }));
 app.use(morgan("dev"));
+app.use((req, res, next) => {
+  req.requestId = uuidv4(); // Assign a unique ID to the request
+  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+  // Include the ID in your console logs
+  console.log(`[${req.requestId}] ACCESS - Path: ${req.path} | IP: ${ip}`);
+  next();
+});
 
 // 1. Basic Bot Detection & Logging Middleware
 app.use((req, res, next) => {
@@ -46,6 +55,14 @@ app.use((req, res, next) => {
   next();
 });
 
+const rateLimit = require("express-rate-limit");
+
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // Generous limit for normal traffic
+  message: { error: "Too many requests, please slow down" },
+});
+
 // Basic Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -63,8 +80,11 @@ app.use(
   }),
 );
 
-// Mount the JS Injection Routes
+app.use(globalLimiter);
+
+// 2. Mount the routes
 app.use("/", extraJsRoutes);
+app.use("/", iframeRoute);
 
 // Catch-all 404
 app.use((req, res) => {
