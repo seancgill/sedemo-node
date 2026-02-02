@@ -1,2 +1,4 @@
 sedemo-node-notes.txt
 logs/
+.env
+node_modules/
