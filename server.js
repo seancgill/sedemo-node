@@ -11,6 +11,7 @@ require("dotenv").config();
 
 // Import only the required route
 const extraJsRoutes = require("./routes/extraJsRoutes");
+const iframeRoute = require("./routes/iframeRoute");
 
 const app = express();
 const port = 3000;
