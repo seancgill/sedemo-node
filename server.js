@@ -12,6 +12,7 @@ require("dotenv").config();
 // Import only the required route
 const extraJsRoutes = require("./routes/extraJsRoutes");
 const iframeRoute = require("./routes/iframeRoute");
+const crmRoute = require("./routes/crmRoute");
 
 const app = express();
 const port = 3000;
@@ -86,6 +87,7 @@ app.use(globalLimiter);
 // 2. Mount the routes
 app.use("/", extraJsRoutes);
 app.use("/", iframeRoute);
+app.use("/crm", crmRoute);
 
 // Catch-all 404
 app.use((req, res) => {
